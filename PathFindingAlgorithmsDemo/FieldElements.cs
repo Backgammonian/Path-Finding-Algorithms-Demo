@@ -4,6 +4,7 @@
     {
         Empty,
         Wall,
+        Visited,
         Path,
         Start,
         Finish

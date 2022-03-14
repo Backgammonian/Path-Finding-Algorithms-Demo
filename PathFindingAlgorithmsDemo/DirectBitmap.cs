@@ -103,6 +103,11 @@ namespace PathFindingAlgorithmsDemo
 
         public void FillRectangle(int x, int y, int w, int h, Color color)
         {
+            x -= 1;
+            y -= 1;
+            w -= 1;
+            h -= 1;
+
             for (var i = x; i <= x + w; i++)
             {
                 DrawLine(i, y, i, y + h, color);

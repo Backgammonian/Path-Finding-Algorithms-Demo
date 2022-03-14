@@ -4,7 +4,7 @@ namespace PathFindingAlgorithmsDemo.Algorithms
 {
     public static class AStarPathfinder
     {
-        public static List<Node> AStartFindPath(this NodeGrid grid)
+        public static List<Node> AStartFindPath(this NodeGrid grid, ref HashSet<Node> visited)
         {
             grid.SetCosts(int.MaxValue);
             grid.Start.Cost = 0;
@@ -15,7 +15,6 @@ namespace PathFindingAlgorithmsDemo.Algorithms
             var frontier = new MinHeap<Node>(comparison.HeuristicComparison);
             frontier.Add(grid.Start);
 
-            var visited = new HashSet<Node>();
             visited.Add(grid.Start);
 
             while (frontier.Count > 0)

@@ -27,8 +27,11 @@ namespace PathFindingAlgorithmsDemo
         private readonly DispatcherTimer _timer;
         private string _message;
         private bool _mouseDown;
+        private Point _previousPosition;
+        private Point _currentPosition;
         private readonly NodeGrid _grid;
         private readonly List<Node> _calculatedPath;
+        private HashSet<Node> _visitedNodes;
 
         public MainWindowViewModel()
         {
@@ -55,6 +58,11 @@ namespace PathFindingAlgorithmsDemo
             _grid.End = _grid[0, 1];
 
             _calculatedPath = new List<Node>();
+            _visitedNodes = new HashSet<Node>();
+
+            _mouseDown = false;
+            _previousPosition = new Point(0, 0);
+            _currentPosition = new Point(0, 0);
 
             SelectedPathfindingAlgorithm = PathfindingAlgorithms.AStar;
 
@@ -126,6 +134,11 @@ namespace PathFindingAlgorithmsDemo
 
             if (!_mouseDown)
             {
+                foreach (var node in _visitedNodes)
+                {
+                    _bitmap.FillRectangle(node.X * Node.Size, node.Y * Node.Size, Node.Size, Node.Size, palette[FieldElements.Visited]);
+                }
+
                 foreach (var node in _calculatedPath)
                 {
                     _bitmap.FillRectangle(node.X * Node.Size, node.Y * Node.Size, Node.Size, Node.Size, palette[FieldElements.Path]);
@@ -166,9 +179,12 @@ namespace PathFindingAlgorithmsDemo
         {
             var position = GetNodePosition(e.GetPosition((System.Windows.IInputElement)e.Source));
 
+            _previousPosition = _currentPosition;
+            _currentPosition = position;
+
             if (_mouseDown)
             {
-                _grid[position.X, position.Y].IsWalkable = false;
+                DrawWalls();
             }
             else
             {
@@ -220,6 +236,43 @@ namespace PathFindingAlgorithmsDemo
             Render();
         }
 
+        private void DrawWalls()
+        {
+            var x0 = _previousPosition.X;
+            var y0 = _previousPosition.Y;
+            var x1 = _currentPosition.X;
+            var y1 = _currentPosition.Y;
+
+            var dx = Math.Abs(x1 - x0);
+            var dy = Math.Abs(y1 - y0);
+            var sx = (x0 < x1) ? 1 : -1;
+            var sy = (y0 < y1) ? 1 : -1;
+            var err = dx - dy;
+
+            while (true)
+            {
+                _grid[x0, y0].IsWalkable = false;
+
+                if ((x0 == x1) && (y0 == y1))
+                {
+                    break;
+                }
+
+                var e2 = 2 * err;
+                if (e2 > -dy)
+                {
+                    err -= dy;
+                    x0 += sx;
+                }
+
+                if (e2 < dx)
+                {
+                    err += dx;
+                    y0 += sy;
+                }
+            }
+        }
+
         private void RestartTimer()
         {
             _timer.Stop();
@@ -230,12 +283,13 @@ namespace PathFindingAlgorithmsDemo
         {
             _timer.Stop();
             _calculatedPath.Clear();
+            _visitedNodes.Clear();
             _grid.ResetCosts();
 
             switch (SelectedPathfindingAlgorithm)
             {
                 case PathfindingAlgorithms.AStar:
-                    _calculatedPath.AddRange(_grid.AStartFindPath());
+                    _calculatedPath.AddRange(_grid.AStartFindPath(ref _visitedNodes));
                     break;
                 default:
                     break;

@@ -6,7 +6,7 @@ namespace PathFindingAlgorithmsDemo
     {
         static Node()
         {
-            Size = 8;
+            Size = 4;
         }
 
         public static int Size { get; }
