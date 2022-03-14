@@ -1,0 +1,109 @@
+﻿<Window x:Class="PathFindingAlgorithmsDemo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PathFindingAlgorithmsDemo"
+        xmlns:MouseBehaviours="clr-namespace:Lovatts.MouseBehaviours" 
+        d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}"
+        mc:Ignorable="d"
+        Title="MainWindow" 
+        Height="700" 
+        Width="800">
+    <Window.DataContext>
+        <local:MainWindowViewModel/>
+    </Window.DataContext>
+    <Window.Resources>
+        <ResourceDictionary Source="/Styles.xaml"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="100"/>
+        </Grid.RowDefinitions>
+
+        <Border
+            Grid.Row="0"
+            Style="{StaticResource borderStyle}">
+            <Image
+                Source="{Binding Canvas}"
+                Style="{StaticResource imageStyle}"
+                MouseBehaviours:MouseBehaviour.MouseMoveCommand="{Binding MouseMoveCommand}"
+                MouseBehaviours:MouseBehaviour.MouseDownCommand="{Binding MouseDownCommand}"
+                MouseBehaviours:MouseBehaviour.MouseUpCommand="{Binding MouseUpCommand}"
+                SizeChanged="Image_SizeChanged"/>
+        </Border>
+
+        <StackPanel
+            Grid.Row="1"
+            Orientation="Horizontal"
+            Style="{StaticResource baseStackPanel}">
+            <StackPanel
+                Style="{StaticResource baseStackPanel}">
+                <TextBlock
+                    Style="{StaticResource baseTextBlock}"
+                    Text="Colors themes:"/>
+                <RadioButton
+                    IsChecked="{Binding Path=SelectedColorScheme, Converter={StaticResource colorSchemesConverter}, ConverterParameter={x:Static local:ColorSchemes.Light}}"
+                    GroupName="color">
+                    <TextBlock
+                        Style="{StaticResource baseTextBlock}"
+                        Text="Light"/>
+                </RadioButton>
+                <RadioButton
+                    IsChecked="{Binding Path=SelectedColorScheme, Converter={StaticResource colorSchemesConverter}, ConverterParameter={x:Static local:ColorSchemes.Dark}}"
+                    GroupName="color">
+                    <TextBlock
+                        Style="{StaticResource baseTextBlock}"
+                        Text="Dark"/>
+                </RadioButton>
+                <RadioButton
+                    IsChecked="{Binding Path=SelectedColorScheme, Converter={StaticResource colorSchemesConverter}, ConverterParameter={x:Static local:ColorSchemes.Blue}}"
+                    GroupName="color">
+                    <TextBlock
+                        Style="{StaticResource baseTextBlock}"
+                        Text="Blue"/>
+                </RadioButton>
+            </StackPanel>
+            <Rectangle 
+                Style="{StaticResource verticalSeparator}"/>
+            <StackPanel
+                Style="{StaticResource baseStackPanel}">
+                <TextBlock
+                    Style="{StaticResource baseTextBlock}"
+                    Text="Pathfinding algorithm:"/>
+                <ComboBox
+                    Style="{StaticResource comboBoxStyle}"
+                    ItemsSource="{Binding PathfindingAlgorithmsList}"
+                    SelectedItem="{Binding SelectedPathfindingAlgorithm}">
+                    <ComboBox.ToolTip>
+                        <StackPanel>
+                            <TextBlock 
+                                Style="{StaticResource baseTextBlock}"
+                                Text="{Binding Message}"/>
+                        </StackPanel>
+                    </ComboBox.ToolTip>
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                Style="{StaticResource baseTextBlock}"
+                                Text="{Binding}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+            <Rectangle 
+                Style="{StaticResource verticalSeparator}"/>
+            <StackPanel
+                Style="{StaticResource baseStackPanel}">
+                <Button
+                    Command="{Binding ClearCommand}"
+                    Style="{StaticResource baseButton}">
+                    <TextBlock
+                        Style="{StaticResource baseTextBlock}"
+                        Text="Clear walls"/>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
