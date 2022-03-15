@@ -8,7 +8,7 @@ namespace PathFindingAlgorithmsDemo
 
         public NodeComparison(Node end)
         {
-            end = _end;
+            _end = end;
 
             HeuristicComparison = (lhs, rhs) =>
             {

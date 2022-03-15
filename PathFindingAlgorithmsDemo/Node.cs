@@ -16,7 +16,6 @@ namespace PathFindingAlgorithmsDemo
             var start = current == null ? new Vector2() : current.ToVector2();
             var finish = end == null ? new Vector2() : end.ToVector2();
             return (start - finish).Length();
-            //return (float)System.Math.Sqrt((start.X - finish.X) * (start.X - finish.X) + (start.Y - finish.Y) * (start.Y - finish.Y));
         }
 
         public Node(NodeGrid grid, int x, int y, int weight)
@@ -32,9 +31,20 @@ namespace PathFindingAlgorithmsDemo
         public int X { get; private set; }
         public int Y { get; private set; }
         public int Weight { get; private set; }
+        public bool IsExpensive => Weight == NodeGrid.ExpensiveNodeWeight;
         public int Cost { get; set; }
         public bool IsWalkable { get; set; }
         public Node PreviousNode { get; set; }
+
+        public void SetWeightToDefault()
+        {
+            Weight = NodeGrid.DefaultNodeWeight;
+        }
+
+        public void SetWeightToExpensive()
+        {
+            Weight = NodeGrid.ExpensiveNodeWeight;
+        }
 
         public Vector2 ToVector2()
         {

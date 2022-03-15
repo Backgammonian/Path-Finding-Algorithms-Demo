@@ -7,7 +7,7 @@ namespace PathFindingAlgorithmsDemo.Algorithms
         public static List<Node> BacktrackToPath(Node end)
         {
             var current = end;
-            List<Node> path = new List<Node>();
+            var path = new List<Node>();
 
             while (current != null)
             {

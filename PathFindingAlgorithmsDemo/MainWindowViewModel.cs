@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -32,17 +31,21 @@ namespace PathFindingAlgorithmsDemo
         private readonly NodeGrid _grid;
         private readonly List<Node> _calculatedPath;
         private HashSet<Node> _visitedNodes;
+        private NodeType _selectedNodeType;
 
         public MainWindowViewModel()
         {
-            ClearCommand = new RelayCommand(ClearWalls);
+            ClearCommand = new RelayCommand(ClearField);
             MouseMoveCommand = new RelayCommand<MouseEventArgs>(MouseMove);
             MouseDownCommand = new RelayCommand<MouseEventArgs>(MouseDown);
             MouseUpCommand = new RelayCommand<MouseEventArgs>(MouseUp);
 
             PathfindingAlgorithmsList = new ObservableCollection<PathfindingAlgorithms>
             {
-                PathfindingAlgorithms.AStar
+                PathfindingAlgorithms.AStar,
+                PathfindingAlgorithms.BreadthFirstSearch,
+                PathfindingAlgorithms.Dijkstra,
+                PathfindingAlgorithms.GreedyBestFirstSearch
             };
 
             _bitmap = new DirectBitmap(_width, _height);
@@ -65,6 +68,8 @@ namespace PathFindingAlgorithmsDemo
             _currentPosition = new Point(0, 0);
 
             SelectedPathfindingAlgorithm = PathfindingAlgorithms.AStar;
+            SelectedColorScheme = ColorSchemes.Blue;
+            SelectedNodeType = NodeType.Wall;
 
             Render();
         }
@@ -99,8 +104,15 @@ namespace PathFindingAlgorithmsDemo
             {
                 SetProperty(ref _pathfindingAlgorithm, value);
 
-                Debug.WriteLine("Selected Algorithm: " + SelectedPathfindingAlgorithm);
+                CalculatePath();
+                Render();
             }
+        }
+
+        public NodeType SelectedNodeType
+        {
+            get => _selectedNodeType;
+            set => SetProperty(ref _selectedNodeType, value);
         }
 
         public BitmapImage Canvas
@@ -119,7 +131,7 @@ namespace PathFindingAlgorithmsDemo
         {
             var palette = ColorPalettes.GetPalette(SelectedColorScheme);
 
-            _bitmap.Clear(palette[FieldElements.Empty]);
+            _bitmap.Clear(palette[FieldElements.Default]);
 
             for (int i = 0; i < _grid.Width; i++)
             {
@@ -127,7 +139,12 @@ namespace PathFindingAlgorithmsDemo
                 {
                     if (!_grid[i, j].IsWalkable)
                     {
-                        _bitmap.FillRectangle(_grid[i, j].X * Node.Size, _grid[i, j].Y * Node.Size, Node.Size, Node.Size, palette[FieldElements.Wall]);
+                        _bitmap.FillRectangle(_grid[i, j].X * Node.Size - 1, _grid[i, j].Y * Node.Size - 1, Node.Size - 1, Node.Size - 1, palette[FieldElements.Wall]);
+                    }
+                    else
+                    if (_grid[i, j].IsExpensive)
+                    {
+                        _bitmap.BlendRectangle(_grid[i, j].X * Node.Size - 1, _grid[i, j].Y * Node.Size - 1, Node.Size - 1, Node.Size - 1, palette[FieldElements.Expensive]);
                     }
                 }
             }
@@ -136,17 +153,27 @@ namespace PathFindingAlgorithmsDemo
             {
                 foreach (var node in _visitedNodes)
                 {
-                    _bitmap.FillRectangle(node.X * Node.Size, node.Y * Node.Size, Node.Size, Node.Size, palette[FieldElements.Visited]);
+                    _bitmap.FillRectangle(node.X * Node.Size - 1, node.Y * Node.Size - 1, Node.Size - 1, Node.Size - 1, palette[FieldElements.Visited]);
+
+                    if (node.IsExpensive)
+                    {
+                        _bitmap.BlendRectangle(node.X * Node.Size - 1, node.Y * Node.Size - 1, Node.Size - 1, Node.Size - 1, palette[FieldElements.Expensive]);
+                    }
                 }
 
                 foreach (var node in _calculatedPath)
                 {
-                    _bitmap.FillRectangle(node.X * Node.Size, node.Y * Node.Size, Node.Size, Node.Size, palette[FieldElements.Path]);
+                    _bitmap.FillRectangle(node.X * Node.Size - 1, node.Y * Node.Size - 1, Node.Size - 1, Node.Size - 1, palette[FieldElements.Path]);
+
+                    if (node.IsExpensive)
+                    {
+                        _bitmap.BlendRectangle(node.X * Node.Size - 1, node.Y * Node.Size - 1, Node.Size - 1, Node.Size - 1, palette[FieldElements.Expensive]);
+                    }
                 }
             }
 
-            _bitmap.FillRectangle(_grid.Start.X * Node.Size, _grid.Start.Y * Node.Size, Node.Size, Node.Size, palette[FieldElements.Start]);
-            _bitmap.FillRectangle(_grid.End.X * Node.Size, _grid.End.Y * Node.Size, Node.Size, Node.Size, palette[FieldElements.Finish]);
+            _bitmap.FillRectangle(_grid.Start.X * Node.Size - 1, _grid.Start.Y * Node.Size - 1, Node.Size - 1, Node.Size - 1, palette[FieldElements.Start]);
+            _bitmap.FillRectangle(_grid.End.X * Node.Size - 1, _grid.End.Y * Node.Size - 1, Node.Size - 1, Node.Size - 1, palette[FieldElements.Finish]);
 
             UpdateCanvas();
         }
@@ -184,7 +211,7 @@ namespace PathFindingAlgorithmsDemo
 
             if (_mouseDown)
             {
-                DrawWalls();
+                DrawNodes();
             }
             else
             {
@@ -236,7 +263,7 @@ namespace PathFindingAlgorithmsDemo
             Render();
         }
 
-        private void DrawWalls()
+        private void DrawNodes()
         {
             var x0 = _previousPosition.X;
             var y0 = _previousPosition.Y;
@@ -251,7 +278,23 @@ namespace PathFindingAlgorithmsDemo
 
             while (true)
             {
-                _grid[x0, y0].IsWalkable = false;
+                switch (SelectedNodeType)
+                {
+                    case NodeType.Default:
+                        _grid[x0, y0].IsWalkable = true;
+                        _grid[x0, y0].SetWeightToDefault();
+                        break;
+
+                    case NodeType.Expensive:
+                        _grid[x0, y0].IsWalkable = true;
+                        _grid[x0, y0].SetWeightToExpensive();
+                        break;
+
+                    case NodeType.Wall:
+                        _grid[x0, y0].IsWalkable = false;
+                        _grid[x0, y0].SetWeightToDefault();
+                        break;
+                }
 
                 if ((x0 == x1) && (y0 == y1))
                 {
@@ -282,6 +325,14 @@ namespace PathFindingAlgorithmsDemo
         private void TimerTick(object sender, EventArgs e)
         {
             _timer.Stop();
+
+            CalculatePath();
+
+            Render();
+        }
+
+        private void CalculatePath()
+        {
             _calculatedPath.Clear();
             _visitedNodes.Clear();
             _grid.ResetCosts();
@@ -291,16 +342,24 @@ namespace PathFindingAlgorithmsDemo
                 case PathfindingAlgorithms.AStar:
                     _calculatedPath.AddRange(_grid.AStartFindPath(ref _visitedNodes));
                     break;
-                default:
+
+                case PathfindingAlgorithms.BreadthFirstSearch:
+                    _calculatedPath.AddRange(_grid.BreadthFirstSearchFindPath(ref _visitedNodes));
+                    break;
+
+                case PathfindingAlgorithms.Dijkstra:
+                    _calculatedPath.AddRange(_grid.DijkstraFindPath(ref _visitedNodes));
+                    break;
+
+                case PathfindingAlgorithms.GreedyBestFirstSearch:
+                    _calculatedPath.AddRange(_grid.GreedyBestFirstSearchFindPath(ref _visitedNodes));
                     break;
             }
-
-            Render();
         }
 
-        private void ClearWalls()
+        private void ClearField()
         {
-            _grid.ClearWalls();
+            _grid.Clear();
 
             Render();
         }

@@ -103,11 +103,6 @@ namespace PathFindingAlgorithmsDemo
 
         public void FillRectangle(int x, int y, int w, int h, Color color)
         {
-            x -= 1;
-            y -= 1;
-            w -= 1;
-            h -= 1;
-
             for (var i = x; i <= x + w; i++)
             {
                 DrawLine(i, y, i, y + h, color);
@@ -163,11 +158,19 @@ namespace PathFindingAlgorithmsDemo
             }
         }
 
-        public void BlendRectangle(int x, int y, int w, int h, Color newColor)
+        public void BlendRectangle(int x, int y, int w, int h, Color color)
+        {
+            BlendLine(x, y, x, y + h, color);
+            BlendLine(x, y + h, x + w, y + h, color);
+            BlendLine(x + w, y + h, x + w, y, color);
+            BlendLine(x + w, y, x, y, color);
+        }
+
+        public void BlendFillRectangle(int x, int y, int w, int h, Color color)
         {
             for (var i = x; i <= x + w; i++)
             {
-                BlendLine(i, y, i, y + h, newColor);
+                BlendLine(i, y, i, y + h, color);
             }
         }
 

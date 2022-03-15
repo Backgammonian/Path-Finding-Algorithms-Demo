@@ -4,6 +4,9 @@ namespace PathFindingAlgorithmsDemo
 {
     public class NodeGrid
     {
+        public const int DefaultNodeWeight = 1;
+        public const int ExpensiveNodeWeight = 20;
+
         private readonly Node[] _nodes;
 
         public NodeGrid(int width, int height)
@@ -16,7 +19,7 @@ namespace PathFindingAlgorithmsDemo
             {
                 for (int j = 0; j < Height; j++)
                 {
-                    var node = new Node(this, i, j, 1);
+                    var node = new Node(this, i, j, DefaultNodeWeight);
                     var index = GetNodeIndex(i, j);
                     _nodes[index] = node;
                 }
@@ -50,11 +53,12 @@ namespace PathFindingAlgorithmsDemo
             return x >= 0 && x < Width && y >= 0 && y < Height;
         }
 
-        public void ClearWalls()
+        public void Clear()
         {
             for (int i = 0; i < _nodes.Length; i++)
             {
                 _nodes[i].IsWalkable = true;
+                _nodes[i].SetWeightToDefault();
             }
         }
 

@@ -7,7 +7,7 @@
         xmlns:MouseBehaviours="clr-namespace:Lovatts.MouseBehaviours" 
         d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}"
         mc:Ignorable="d"
-        Title="MainWindow" 
+        Title="Pathfinding Algorithms" 
         Height="700" 
         Width="800">
     <Window.DataContext>
@@ -44,27 +44,28 @@
                     Style="{StaticResource baseTextBlock}"
                     Text="Colors themes:"/>
                 <RadioButton
-                    IsChecked="{Binding Path=SelectedColorScheme, Converter={StaticResource colorSchemesConverter}, ConverterParameter={x:Static local:ColorSchemes.Light}}"
+                    IsChecked="{Binding Path=SelectedColorScheme, Converter={StaticResource radioButtonEnumConverter}, ConverterParameter={x:Static local:ColorSchemes.Light}}"
                     GroupName="color">
                     <TextBlock
                         Style="{StaticResource baseTextBlock}"
                         Text="Light"/>
                 </RadioButton>
                 <RadioButton
-                    IsChecked="{Binding Path=SelectedColorScheme, Converter={StaticResource colorSchemesConverter}, ConverterParameter={x:Static local:ColorSchemes.Dark}}"
+                    IsChecked="{Binding Path=SelectedColorScheme, Converter={StaticResource radioButtonEnumConverter}, ConverterParameter={x:Static local:ColorSchemes.Dark}}"
                     GroupName="color">
                     <TextBlock
                         Style="{StaticResource baseTextBlock}"
                         Text="Dark"/>
                 </RadioButton>
                 <RadioButton
-                    IsChecked="{Binding Path=SelectedColorScheme, Converter={StaticResource colorSchemesConverter}, ConverterParameter={x:Static local:ColorSchemes.Blue}}"
+                    IsChecked="{Binding Path=SelectedColorScheme, Converter={StaticResource radioButtonEnumConverter}, ConverterParameter={x:Static local:ColorSchemes.Blue}}"
                     GroupName="color">
                     <TextBlock
                         Style="{StaticResource baseTextBlock}"
                         Text="Blue"/>
                 </RadioButton>
             </StackPanel>
+
             <Rectangle 
                 Style="{StaticResource verticalSeparator}"/>
             <StackPanel
@@ -96,12 +97,41 @@
                 Style="{StaticResource verticalSeparator}"/>
             <StackPanel
                 Style="{StaticResource baseStackPanel}">
+                <TextBlock
+                    Style="{StaticResource baseTextBlock}"
+                    Text="Placed node:"/>
+                <RadioButton
+                    IsChecked="{Binding Path=SelectedNodeType, Converter={StaticResource radioButtonEnumConverter}, ConverterParameter={x:Static local:NodeType.Default}}"
+                    GroupName="node">
+                    <TextBlock
+                        Style="{StaticResource baseTextBlock}"
+                        Text="Default"/>
+                </RadioButton>
+                <RadioButton
+                    IsChecked="{Binding Path=SelectedNodeType, Converter={StaticResource radioButtonEnumConverter}, ConverterParameter={x:Static local:NodeType.Expensive}}"
+                    GroupName="node">
+                    <TextBlock
+                        Style="{StaticResource baseTextBlock}"
+                        Text="Expensive"/>
+                </RadioButton>
+                <RadioButton
+                    IsChecked="{Binding Path=SelectedNodeType, Converter={StaticResource radioButtonEnumConverter}, ConverterParameter={x:Static local:NodeType.Wall}}"
+                    GroupName="node">
+                    <TextBlock
+                        Style="{StaticResource baseTextBlock}"
+                        Text="Wall"/>
+                </RadioButton>
+            </StackPanel>
+            <Rectangle 
+                Style="{StaticResource verticalSeparator}"/>
+            <StackPanel
+                Style="{StaticResource baseStackPanel}">
                 <Button
                     Command="{Binding ClearCommand}"
                     Style="{StaticResource baseButton}">
                     <TextBlock
                         Style="{StaticResource baseTextBlock}"
-                        Text="Clear walls"/>
+                        Text="Clear field"/>
                 </Button>
             </StackPanel>
         </StackPanel>

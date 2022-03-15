@@ -2,6 +2,9 @@
 {
     public enum PathfindingAlgorithms
     {
-        AStar
+        AStar,
+        BreadthFirstSearch,
+        Dijkstra,
+        GreedyBestFirstSearch
     }
 }

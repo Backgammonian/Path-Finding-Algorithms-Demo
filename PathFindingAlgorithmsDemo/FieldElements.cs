@@ -2,7 +2,8 @@
 {
     public enum FieldElements
     {
-        Empty,
+        Default,
+        Expensive,
         Wall,
         Visited,
         Path,

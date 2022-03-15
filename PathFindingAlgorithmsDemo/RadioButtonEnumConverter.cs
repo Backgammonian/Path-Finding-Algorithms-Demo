@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace PathFindingAlgorithmsDemo
 {
-    public class ColorSchemesConverter : IValueConverter
+    public class RadioButtonEnumConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

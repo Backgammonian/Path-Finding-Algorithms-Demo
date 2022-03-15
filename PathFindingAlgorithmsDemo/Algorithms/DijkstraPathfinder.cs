@@ -4,20 +4,18 @@ namespace PathFindingAlgorithmsDemo.Algorithms
 {
     //source: https://github.com/dbrizov/Unity-PathFindingAlgorithms/blob/master/Assets/Scripts/PathFinder.cs
 
-    public static class AStarPathfinder
+    public static class DijkstraPathfinder
     {
-        public static List<Node> AStartFindPath(this NodeGrid grid, ref HashSet<Node> visited)
+        public static List<Node> DijkstraFindPath(this NodeGrid grid, ref HashSet<Node> visited)
         {
             grid.SetCosts(int.MaxValue);
             grid.Start.Cost = 0;
             grid.Start.PreviousNode = null;
 
-            var comparison = new NodeComparison(grid.End);
-
-            var frontier = new MinHeap<Node>(comparison.HeuristicComparison);
-            frontier.Add(grid.Start);
-
             visited.Add(grid.Start);
+
+            var frontier = new MinHeap<Node>((lhs, rhs) => lhs.Cost.CompareTo(rhs.Cost));
+            frontier.Add(grid.Start);
 
             while (frontier.Count > 0)
             {
@@ -39,8 +37,8 @@ namespace PathFindingAlgorithmsDemo.Algorithms
 
                     if (!visited.Contains(neighbor) && neighbor.IsWalkable)
                     {
-                        frontier.Add(neighbor);
                         visited.Add(neighbor);
+                        frontier.Add(neighbor);
                     }
                 }
             }

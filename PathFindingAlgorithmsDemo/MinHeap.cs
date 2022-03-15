@@ -8,7 +8,7 @@ namespace PathFindingAlgorithmsDemo
         private const int _initialCapacity = 4;
         private T[] _array;
         private int _lastItemIndex;
-        private IComparer<T> _comparer;
+        private readonly IComparer<T> _comparer;
 
         public MinHeap() : this(_initialCapacity, Comparer<T>.Default)
         {
