@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 
 namespace PathFindingAlgorithmsDemo
 {
@@ -11,7 +12,7 @@ namespace PathFindingAlgorithmsDemo
 
         public static int Size { get; }
 
-        public static float GetEuclideanHeuristicCost(Node current, Node end)
+        private static float GetEuclideanHeuristicCost(Node current, Node end)
         {
             var start = current == null ? new Vector2() : current.ToVector2();
             var finish = end == null ? new Vector2() : end.ToVector2();
@@ -25,6 +26,14 @@ namespace PathFindingAlgorithmsDemo
             Y = y;
             Weight = weight;
             IsWalkable = true;
+
+            HeuristicComparison = (lhs, rhs) =>
+            {
+                var lhsCost = lhs.Cost + GetEuclideanHeuristicCost(lhs, this);
+                var rhsCost = rhs.Cost + GetEuclideanHeuristicCost(rhs, this);
+
+                return lhsCost.CompareTo(rhsCost);
+            };
         }
 
         public NodeGrid Grid { get; private set; }
@@ -35,6 +44,7 @@ namespace PathFindingAlgorithmsDemo
         public int Cost { get; set; }
         public bool IsWalkable { get; set; }
         public Node PreviousNode { get; set; }
+        public Comparison<Node> HeuristicComparison { get; }
 
         public void SetWeightToDefault()
         {

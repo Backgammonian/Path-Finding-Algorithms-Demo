@@ -12,9 +12,7 @@ namespace PathFindingAlgorithmsDemo.Algorithms
             grid.Start.Cost = 0;
             grid.Start.PreviousNode = null;
 
-            var comparison = new NodeComparison(grid.End);
-
-            var frontier = new MinHeap<Node>(comparison.HeuristicComparison);
+            var frontier = new MinHeap<Node>(grid.End.HeuristicComparison);
             frontier.Add(grid.Start);
 
             visited.Add(grid.Start);
