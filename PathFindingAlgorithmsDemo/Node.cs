@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Collections.Generic;
 
 namespace PathFindingAlgorithmsDemo
 {
@@ -40,25 +41,49 @@ namespace PathFindingAlgorithmsDemo
         public int X { get; private set; }
         public int Y { get; private set; }
         public int Weight { get; private set; }
-        public bool IsExpensive => Weight == NodeGrid.ExpensiveNodeWeight;
+        public bool IsWalkable { get; private set; }
+        public bool IsExpensive => Weight == NodeGrid.ExpensiveNodeWeight && IsWalkable;
         public int Cost { get; set; }
-        public bool IsWalkable { get; set; }
         public Node PreviousNode { get; set; }
         public Comparison<Node> HeuristicComparison { get; }
 
-        public void SetWeightToDefault()
+        public void SetToDefault()
         {
+            IsWalkable = true;
             Weight = NodeGrid.DefaultNodeWeight;
         }
 
-        public void SetWeightToExpensive()
+        public void SetToExpensive()
         {
+            IsWalkable = true;
             Weight = NodeGrid.ExpensiveNodeWeight;
+        }
+
+        public void SetToWall()
+        {
+            IsWalkable = false;
+            Weight = NodeGrid.DefaultNodeWeight;
         }
 
         public Vector2 ToVector2()
         {
             return new Vector2(X, Y);
+        }
+
+        public List<Node> BacktrackToPath()
+        {
+            var current = this;
+            var path = new List<Node>();
+
+            while (current != null)
+            {
+                path.Add(current);
+                current = current.PreviousNode;
+            }
+
+            path.Reverse();
+
+            return path;
         }
     }
 }

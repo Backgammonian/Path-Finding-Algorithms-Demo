@@ -127,6 +127,18 @@
             <StackPanel
                 Style="{StaticResource baseStackPanel}">
                 <Button
+                    Command="{Binding GenerateMapCommand}"
+                    Style="{StaticResource baseButton}">
+                    <TextBlock
+                        Style="{StaticResource baseTextBlock}"
+                        Text="Generate map"/>
+                </Button>
+            </StackPanel>
+            <Rectangle 
+                Style="{StaticResource verticalSeparator}"/>
+            <StackPanel
+                Style="{StaticResource baseStackPanel}">
+                <Button
                     Command="{Binding ClearCommand}"
                     Style="{StaticResource baseButton}">
                     <TextBlock

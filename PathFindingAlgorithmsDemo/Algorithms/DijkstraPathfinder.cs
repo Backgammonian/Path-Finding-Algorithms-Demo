@@ -43,7 +43,7 @@ namespace PathFindingAlgorithmsDemo.Algorithms
                 }
             }
 
-            return Utils.BacktrackToPath(grid.End);
+            return grid.End.BacktrackToPath();
         }
     }
 }

@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 using PathFindingAlgorithmsDemo.Algorithms;
+using PathFindingAlgorithmsDemo.MapGeneration;
 
 namespace PathFindingAlgorithmsDemo
 {
@@ -39,6 +40,7 @@ namespace PathFindingAlgorithmsDemo
             MouseMoveCommand = new RelayCommand<MouseEventArgs>(MouseMove);
             MouseDownCommand = new RelayCommand<MouseEventArgs>(MouseDown);
             MouseUpCommand = new RelayCommand<MouseEventArgs>(MouseUp);
+            GenerateMapCommand = new RelayCommand(GenerateMap);
 
             PathfindingAlgorithmsList = new ObservableCollection<PathfindingAlgorithms>
             {
@@ -78,6 +80,7 @@ namespace PathFindingAlgorithmsDemo
         public ICommand MouseMoveCommand { get; }
         public ICommand MouseDownCommand { get; }
         public ICommand MouseUpCommand { get; }
+        public ICommand GenerateMapCommand { get; }
         public ObservableCollection<PathfindingAlgorithms> PathfindingAlgorithmsList { get; }
 
         public string Message
@@ -234,7 +237,21 @@ namespace PathFindingAlgorithmsDemo
             {
                 case MouseButtonState.Pressed:
                     _mouseDown = true;
-                    _grid[position.X, position.Y].IsWalkable = false;
+
+                    switch (SelectedNodeType)
+                    {
+                        case NodeType.Default:
+                            _grid[position.X, position.Y].SetToDefault();
+                            break;
+
+                        case NodeType.Expensive:
+                            _grid[position.X, position.Y].SetToExpensive();
+                            break;
+
+                        case NodeType.Wall:
+                            _grid[position.X, position.Y].SetToWall();
+                            break;
+                    }
                     break;
             }
 
@@ -281,18 +298,15 @@ namespace PathFindingAlgorithmsDemo
                 switch (SelectedNodeType)
                 {
                     case NodeType.Default:
-                        _grid[x0, y0].IsWalkable = true;
-                        _grid[x0, y0].SetWeightToDefault();
+                        _grid[x0, y0].SetToDefault();
                         break;
 
                     case NodeType.Expensive:
-                        _grid[x0, y0].IsWalkable = true;
-                        _grid[x0, y0].SetWeightToExpensive();
+                        _grid[x0, y0].SetToExpensive();
                         break;
 
                     case NodeType.Wall:
-                        _grid[x0, y0].IsWalkable = false;
-                        _grid[x0, y0].SetWeightToDefault();
+                        _grid[x0, y0].SetToWall();
                         break;
                 }
 
@@ -359,7 +373,30 @@ namespace PathFindingAlgorithmsDemo
 
         private void ClearField()
         {
+            _calculatedPath.Clear();
+            _visitedNodes.Clear();
+
             _grid.Clear();
+
+            Render();
+        }
+
+        private void GenerateMap()
+        {
+            _calculatedPath.Clear();
+            _visitedNodes.Clear();
+
+            _grid.Clear();
+
+            var iterationsNumber = RandomUtils.Next(1, 7);
+            var density = RandomUtils.Next(40, 65);
+
+            var mapGenerator = new MapGenerator(_grid.Width, _grid.Height)
+                .SetSeed(RandomUtils.GetRandomString(20))
+                .GenerateNoise(density)
+                .PerformCellularAutomata(iterationsNumber);
+
+            _grid.SetWallsFromMap(mapGenerator.Map);
 
             Render();
         }

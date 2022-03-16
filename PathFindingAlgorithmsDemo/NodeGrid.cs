@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace PathFindingAlgorithmsDemo
 {
@@ -57,8 +58,7 @@ namespace PathFindingAlgorithmsDemo
         {
             for (int i = 0; i < _nodes.Length; i++)
             {
-                _nodes[i].IsWalkable = true;
-                _nodes[i].SetWeightToDefault();
+                _nodes[i].SetToDefault();
             }
         }
 
@@ -99,6 +99,25 @@ namespace PathFindingAlgorithmsDemo
             if (IsInBounds(node.X - 1, node.Y))
             {
                 yield return _nodes[GetNodeIndex(node.X - 1, node.Y)];
+            }
+        }
+
+        public void SetWallsFromMap(bool[,] map)
+        {
+            if (map.GetLength(0) != Width || map.GetLength(1) != Height)
+            {
+                throw new Exception("Wrong numbers");
+            }
+
+            for (int i = 0; i < Width; i++)
+            {
+                for (int j = 0; j < Height; j++)
+                {
+                    if (map[i, j] == true)
+                    {
+                        this[i, j].SetToWall();
+                    }
+                }
             }
         }
     }
