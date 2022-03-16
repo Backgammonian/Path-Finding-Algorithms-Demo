@@ -4,6 +4,7 @@ WPF app for demonstrating shortest path finding algorithms
 * Left click - place nodes of selected type
 * Right click - place start point
 * Destination point moves to mouse cursor
+* Hold mouse position to create shortest path
 * Alt - hold position of destination point
 * "Generate map" button - creates randomized field structure using cellular automata algorithm
 ## Available pathfinding algorithms:
