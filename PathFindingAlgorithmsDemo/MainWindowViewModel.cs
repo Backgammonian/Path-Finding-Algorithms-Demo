@@ -16,7 +16,7 @@ namespace PathFindingAlgorithmsDemo
 {
     public class MainWindowViewModel : ObservableObject
     {
-        private const int _width = 800;
+        private const int _width = 830;
         private const int _height = 600;
         private double _canvasActualWidth;
         private double _canvasActualHeight;
