@@ -69,7 +69,8 @@
             <Rectangle 
                 Style="{StaticResource verticalSeparator}"/>
             <StackPanel
-                Style="{StaticResource baseStackPanel}">
+                Style="{StaticResource baseStackPanel}"
+                IsEnabled="{Binding IsNotRunning}">
                 <TextBlock
                     Style="{StaticResource baseTextBlock}"
                     Text="Pathfinding algorithm:"/>
@@ -77,13 +78,6 @@
                     Style="{StaticResource comboBoxStyle}"
                     ItemsSource="{Binding PathfindingAlgorithmsList}"
                     SelectedItem="{Binding SelectedPathfindingAlgorithm}">
-                    <ComboBox.ToolTip>
-                        <StackPanel>
-                            <TextBlock 
-                                Style="{StaticResource baseTextBlock}"
-                                Text="{Binding Message}"/>
-                        </StackPanel>
-                    </ComboBox.ToolTip>
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock
@@ -96,7 +90,8 @@
             <Rectangle 
                 Style="{StaticResource verticalSeparator}"/>
             <StackPanel
-                Style="{StaticResource baseStackPanel}">
+                Style="{StaticResource baseStackPanel}"
+                IsEnabled="{Binding IsNotRunning}">
                 <TextBlock
                     Style="{StaticResource baseTextBlock}"
                     Text="Placed node:"/>
@@ -105,7 +100,7 @@
                     GroupName="node">
                     <TextBlock
                         Style="{StaticResource baseTextBlock}"
-                        Text="Default"/>
+                        Text="Empty"/>
                 </RadioButton>
                 <RadioButton
                     IsChecked="{Binding Path=SelectedNodeType, Converter={StaticResource radioButtonEnumConverter}, ConverterParameter={x:Static local:NodeType.Expensive}}"
@@ -125,7 +120,8 @@
             <Rectangle 
                 Style="{StaticResource verticalSeparator}"/>
             <StackPanel
-                Style="{StaticResource baseStackPanel}">
+                Style="{StaticResource baseStackPanel}"
+                IsEnabled="{Binding IsNotRunning}">
                 <Button
                     Command="{Binding GenerateMapCommand}"
                     Style="{StaticResource baseButton}">
@@ -137,13 +133,56 @@
             <Rectangle 
                 Style="{StaticResource verticalSeparator}"/>
             <StackPanel
-                Style="{StaticResource baseStackPanel}">
+                Style="{StaticResource baseStackPanel}"
+                IsEnabled="{Binding IsNotRunning}">
                 <Button
                     Command="{Binding ClearCommand}"
                     Style="{StaticResource baseButton}">
                     <TextBlock
                         Style="{StaticResource baseTextBlock}"
                         Text="Clear field"/>
+                </Button>
+            </StackPanel>
+            <Rectangle 
+                Style="{StaticResource verticalSeparator}"/>
+            <StackPanel
+                Style="{StaticResource baseStackPanel}"
+                IsEnabled="{Binding IsNotRunning}">
+                <TextBlock
+                    Style="{StaticResource baseTextBlock}"
+                    Text="Operating mode:"/>
+                <RadioButton
+                    IsChecked="{Binding Path=SelectedOperatingMode, Converter={StaticResource radioButtonEnumConverter}, ConverterParameter={x:Static local:OperatingModes.AllAtOnce}}"
+                    GroupName="operatingMode">
+                    <TextBlock
+                        Style="{StaticResource baseTextBlock}"
+                        Text="All at once"/>
+                </RadioButton>
+                <RadioButton
+                    IsChecked="{Binding Path=SelectedOperatingMode, Converter={StaticResource radioButtonEnumConverter}, ConverterParameter={x:Static local:OperatingModes.StepByStep}}"
+                    GroupName="operatingMode">
+                    <TextBlock
+                        Style="{StaticResource baseTextBlock}"
+                        Text="Step-by-step"/>
+                </RadioButton>
+            </StackPanel>
+            <Rectangle 
+                Style="{StaticResource verticalSeparator}"/>
+            <StackPanel
+                Style="{StaticResource baseStackPanel}">
+                <Button
+                    Command="{Binding StartAlgorithmCommand}"
+                    Style="{StaticResource stepByStepStartButton}">
+                    <TextBlock
+                        Style="{StaticResource baseTextBlock}"
+                        Text="Start algorithm"/>
+                </Button>
+                <Button
+                    Command="{Binding StopAlgorithmCommand}"
+                    Style="{StaticResource stepByStepStopButton}">
+                    <TextBlock
+                        Style="{StaticResource baseTextBlock}"
+                        Text="Stop algorithm"/>
                 </Button>
             </StackPanel>
         </StackPanel>

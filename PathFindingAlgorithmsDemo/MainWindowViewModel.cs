@@ -25,7 +25,6 @@ namespace PathFindingAlgorithmsDemo
         private ColorSchemes _colorScheme;
         private PathfindingAlgorithms _pathfindingAlgorithm;
         private readonly DispatcherTimer _timer;
-        private string _message;
         private bool _mouseDown;
         private Point _previousPosition;
         private Point _currentPosition;
@@ -33,6 +32,15 @@ namespace PathFindingAlgorithmsDemo
         private readonly List<Node> _calculatedPath;
         private HashSet<Node> _visitedNodes;
         private NodeType _selectedNodeType;
+        private readonly DispatcherTimer _pathfindingTimer;
+        private OperatingModes _selectedOperatingMode;
+        private int _currentNewNode;
+        private int _currentNewPath;
+        private List<NewNodeInfo> _newNodes;
+        private List<NewPathInfo> _newPaths;
+        private bool _isRunning;
+        private readonly List<Node> _calculatedPathCopy;
+        private readonly HashSet<Node> _visitedNodesCopy;
 
         public MainWindowViewModel()
         {
@@ -41,6 +49,8 @@ namespace PathFindingAlgorithmsDemo
             MouseDownCommand = new RelayCommand<MouseEventArgs>(MouseDown);
             MouseUpCommand = new RelayCommand<MouseEventArgs>(MouseUp);
             GenerateMapCommand = new RelayCommand(GenerateMap);
+            StartAlgorithmCommand = new RelayCommand(StartAlgorithm);
+            StopAlgorithmCommand = new RelayCommand(StopAlgorithm);
 
             PathfindingAlgorithmsList = new ObservableCollection<PathfindingAlgorithms>
             {
@@ -72,6 +82,21 @@ namespace PathFindingAlgorithmsDemo
             SelectedPathfindingAlgorithm = PathfindingAlgorithms.AStar;
             SelectedColorScheme = ColorSchemes.Blue;
             SelectedNodeType = NodeType.Wall;
+            SelectedOperatingMode = OperatingModes.AllAtOnce;
+
+            _pathfindingTimer = new DispatcherTimer();
+            _pathfindingTimer.Interval = new TimeSpan(0, 0, 0, 0, 0);
+            _pathfindingTimer.Tick += PathfindingTimerTick;
+
+            _currentNewNode = 0;
+            _currentNewPath = 0;
+            _newNodes = new List<NewNodeInfo>();
+            _newPaths = new List<NewPathInfo>();
+
+            _calculatedPathCopy = new List<Node>();
+            _visitedNodesCopy = new HashSet<Node>();
+
+            IsRunning = false;
 
             Render();
         }
@@ -81,13 +106,11 @@ namespace PathFindingAlgorithmsDemo
         public ICommand MouseDownCommand { get; }
         public ICommand MouseUpCommand { get; }
         public ICommand GenerateMapCommand { get; }
+        public ICommand StartAlgorithmCommand { get; }
+        public ICommand StopAlgorithmCommand { get; }
         public ObservableCollection<PathfindingAlgorithms> PathfindingAlgorithmsList { get; }
-
-        public string Message
-        {
-            get => _message;
-            private set => SetProperty(ref _message, value);
-        }
+        public bool IsStepByStepMode => SelectedOperatingMode == OperatingModes.StepByStep;
+        public bool IsNotRunning => !IsRunning;
 
         public ColorSchemes SelectedColorScheme
         {
@@ -107,8 +130,16 @@ namespace PathFindingAlgorithmsDemo
             {
                 SetProperty(ref _pathfindingAlgorithm, value);
 
-                CalculatePath();
-                Render();
+                switch (SelectedOperatingMode)
+                {
+                    case OperatingModes.StepByStep:
+                        break;
+
+                    case OperatingModes.AllAtOnce:
+                        CalculatePath();
+                        Render();
+                        break;
+                }
             }
         }
 
@@ -118,10 +149,44 @@ namespace PathFindingAlgorithmsDemo
             set => SetProperty(ref _selectedNodeType, value);
         }
 
+        public OperatingModes SelectedOperatingMode
+        {
+            get => _selectedOperatingMode;
+            set
+            {
+                SetProperty(ref _selectedOperatingMode, value);
+                OnPropertyChanged(nameof(IsStepByStepMode));
+
+                switch (SelectedOperatingMode)
+                {
+                    case OperatingModes.StepByStep:
+                        _timer.Stop();
+                        ResetPath();
+                        Render();
+                        break;
+
+                    case OperatingModes.AllAtOnce:
+                        CalculatePath();
+                        Render();
+                        break;
+                }
+            }
+        }
+
         public BitmapImage Canvas
         {
             get => _canvas;
             private set => SetProperty(ref _canvas, value);
+        }
+
+        public bool IsRunning
+        {
+            get => _isRunning;
+            private set
+            {
+                SetProperty(ref _isRunning, value);
+                OnPropertyChanged(nameof(IsNotRunning));
+            }
         }
 
         public void SetActualCanvasSize(double width, double height)
@@ -207,6 +272,11 @@ namespace PathFindingAlgorithmsDemo
 
         private void MouseMove(MouseEventArgs e)
         {
+            if (IsRunning)
+            {
+                return;
+            }
+
             var position = GetNodePosition(e.GetPosition((System.Windows.IInputElement)e.Source));
 
             _previousPosition = _currentPosition;
@@ -218,7 +288,8 @@ namespace PathFindingAlgorithmsDemo
             }
             else
             {
-                if (position.X != _grid.End.X || position.Y != _grid.End.Y)
+                if ((position.X != _grid.End.X || position.Y != _grid.End.Y) &&
+                    SelectedOperatingMode == OperatingModes.AllAtOnce)
                 {
                     RestartTimer();
                 }
@@ -231,6 +302,11 @@ namespace PathFindingAlgorithmsDemo
 
         private void MouseDown(MouseEventArgs e)
         {
+            if (IsRunning)
+            {
+                return;
+            }
+
             var position = GetNodePosition(e.GetPosition((System.Windows.IInputElement)e.Source));
 
             switch (e.LeftButton)
@@ -270,6 +346,11 @@ namespace PathFindingAlgorithmsDemo
 
         private void MouseUp(MouseEventArgs e)
         {
+            if (IsRunning)
+            {
+                return;
+            }
+
             switch (e.LeftButton)
             {
                 case MouseButtonState.Released:
@@ -341,15 +422,19 @@ namespace PathFindingAlgorithmsDemo
             _timer.Stop();
 
             CalculatePath();
-
             Render();
         }
 
-        private void CalculatePath()
+        private void ResetPath()
         {
             _calculatedPath.Clear();
             _visitedNodes.Clear();
             _grid.ResetCosts();
+        }
+
+        private void CalculatePath()
+        {
+            ResetPath();
 
             switch (SelectedPathfindingAlgorithm)
             {
@@ -375,7 +460,6 @@ namespace PathFindingAlgorithmsDemo
         {
             _calculatedPath.Clear();
             _visitedNodes.Clear();
-
             _grid.Clear();
 
             Render();
@@ -399,6 +483,108 @@ namespace PathFindingAlgorithmsDemo
             _grid.SetWallsFromMap(mapGenerator.Map);
 
             Render();
+        }
+
+        private void StopPathfindingTimer()
+        {
+            _pathfindingTimer.Stop();
+
+            _calculatedPath.Clear();
+            _calculatedPath.AddRange(_calculatedPathCopy);
+
+            _visitedNodes.Clear();
+            foreach (var visitedNode in _visitedNodesCopy)
+            {
+                _visitedNodes.Add(visitedNode);
+            }
+
+            IsRunning = false;
+
+            Render();
+        }
+
+        private void PathfindingTimerTick(object sender, EventArgs e)
+        {
+            if (_currentNewNode == _newNodes.Count &&
+                _currentNewPath == _newPaths.Count)
+            {
+                StopPathfindingTimer();
+                return;
+            }
+
+            if (_currentNewNode < _newNodes.Count)
+            {
+                _visitedNodes.Add(_newNodes[_currentNewNode].Node);
+
+                _currentNewNode += 1;
+            }
+            
+            if (_currentNewPath < _newPaths.Count)
+            {
+                _calculatedPath.Clear();
+                _calculatedPath.AddRange(_newPaths[_currentNewPath].Path);
+
+                _currentNewPath += 1;
+            }
+
+            Render();
+        }
+
+        private void StartAlgorithm()
+        {
+            IsRunning = true;
+
+            ResetPath();
+
+            _currentNewNode = 0;
+            _currentNewPath = 0;
+            _newNodes.Clear();
+            _newPaths.Clear();
+            _calculatedPathCopy.Clear();
+            _visitedNodesCopy.Clear();
+
+            switch (SelectedPathfindingAlgorithm)
+            {
+                case PathfindingAlgorithms.AStar:
+                    _calculatedPath.AddRange(_grid.AStartFindPath(ref _visitedNodes, ref _newNodes, ref _newPaths));
+                    System.Diagnostics.Debug.WriteLine("_newNodes.Count: " + _newNodes.Count + "");
+                    System.Diagnostics.Debug.WriteLine("_newPaths.Count: " + _newPaths.Count + "");
+                    break;
+
+                case PathfindingAlgorithms.BreadthFirstSearch:
+                    _calculatedPath.AddRange(_grid.BreadthFirstSearchFindPath(ref _visitedNodes, ref _newNodes, ref _newPaths));
+                    System.Diagnostics.Debug.WriteLine("_newNodes.Count: " + _newNodes.Count + "");
+                    System.Diagnostics.Debug.WriteLine("_newPaths.Count: " + _newPaths.Count + "");
+                    break;
+
+                case PathfindingAlgorithms.Dijkstra:
+                    _calculatedPath.AddRange(_grid.DijkstraFindPath(ref _visitedNodes, ref _newNodes, ref _newPaths));
+                    System.Diagnostics.Debug.WriteLine("_newNodes.Count: " + _newNodes.Count + "");
+                    System.Diagnostics.Debug.WriteLine("_newPaths.Count: " + _newPaths.Count + "");
+                    break;
+
+                case PathfindingAlgorithms.GreedyBestFirstSearch:
+                    _calculatedPath.AddRange(_grid.GreedyBestFirstSearchFindPath(ref _visitedNodes, ref _newNodes, ref _newPaths));
+                    System.Diagnostics.Debug.WriteLine("_newNodes.Count: " + _newNodes.Count + "");
+                    System.Diagnostics.Debug.WriteLine("_newPaths.Count: " + _newPaths.Count + "");
+                    break;
+            }
+
+            _calculatedPathCopy.AddRange(_calculatedPath);
+            _calculatedPath.Clear();
+
+            foreach (var visitedNode in _visitedNodes)
+            {
+                _visitedNodesCopy.Add(visitedNode);
+            }
+            _visitedNodes.Clear();
+
+            _pathfindingTimer.Start();
+        }
+
+        private void StopAlgorithm()
+        {
+            StopPathfindingTimer();
         }
     }
 }
