@@ -14,7 +14,7 @@ WPF app for demonstrating shortest path finding algorithms
 * Dijkstra
 * Greedy Best First Search
 ## Demonstration
-![demo_new](demo.gif)
+![demo](demo_new.gif)
 ## Libraries used in this project
 * [System.Drawing.Common](https://www.nuget.org/packages/System.Drawing.Common/)
 * [Microsoft.Tookit.Mvvm](https://github.com/CommunityToolkit/WindowsCommunityToolkit)
