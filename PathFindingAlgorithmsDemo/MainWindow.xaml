@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         Title="Pathfinding Algorithms" 
         Height="700" 
-        Width="830">
+        Width="825">
     <Window.DataContext>
         <local:MainWindowViewModel/>
     </Window.DataContext>
