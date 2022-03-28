@@ -547,26 +547,18 @@ namespace PathFindingAlgorithmsDemo
             {
                 case PathfindingAlgorithms.AStar:
                     _calculatedPath.AddRange(_grid.AStartFindPath(ref _visitedNodes, ref _newNodes, ref _newPaths));
-                    System.Diagnostics.Debug.WriteLine("_newNodes.Count: " + _newNodes.Count + "");
-                    System.Diagnostics.Debug.WriteLine("_newPaths.Count: " + _newPaths.Count + "");
                     break;
 
                 case PathfindingAlgorithms.BreadthFirstSearch:
                     _calculatedPath.AddRange(_grid.BreadthFirstSearchFindPath(ref _visitedNodes, ref _newNodes, ref _newPaths));
-                    System.Diagnostics.Debug.WriteLine("_newNodes.Count: " + _newNodes.Count + "");
-                    System.Diagnostics.Debug.WriteLine("_newPaths.Count: " + _newPaths.Count + "");
                     break;
 
                 case PathfindingAlgorithms.Dijkstra:
                     _calculatedPath.AddRange(_grid.DijkstraFindPath(ref _visitedNodes, ref _newNodes, ref _newPaths));
-                    System.Diagnostics.Debug.WriteLine("_newNodes.Count: " + _newNodes.Count + "");
-                    System.Diagnostics.Debug.WriteLine("_newPaths.Count: " + _newPaths.Count + "");
                     break;
 
                 case PathfindingAlgorithms.GreedyBestFirstSearch:
                     _calculatedPath.AddRange(_grid.GreedyBestFirstSearchFindPath(ref _visitedNodes, ref _newNodes, ref _newPaths));
-                    System.Diagnostics.Debug.WriteLine("_newNodes.Count: " + _newNodes.Count + "");
-                    System.Diagnostics.Debug.WriteLine("_newPaths.Count: " + _newPaths.Count + "");
                     break;
             }
 
